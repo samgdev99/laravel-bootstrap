@@ -1,59 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel 12 + Bootstrap 5 (sin Tailwind)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este proyecto usa **Laravel 12 + Vite + Bootstrap 5.3 + Sass** como stack frontend.
 
-## About Laravel
+Laravel actualmente trae Tailwind por defecto mediante el plugin `@tailwindcss/vite`, pero en este proyecto **se eliminó completamente Tailwind** para trabajar Bootstrap correctamente usando su código fuente Sass y el pipeline moderno de Vite.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack frontend
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Bootstrap 5.3 instalado por NPM
+- Sass como preprocesador
+- Vite como bundler
+- Axios configurado para peticiones AJAX con Laravel
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Estructura clave
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+resources/
+├── js/
+│   ├── app.js
+│   └── bootstrap.js (configuración Axios, no es Bootstrap visual)
+└── scss/
+    └── app.scss (aquí se importa Bootstrap)
+```
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Instalación
 
-### Premium Partners
+```bash
+composer install
+npm install
+composer run dev
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## Cómo está integrado Bootstrap
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### `resources/scss/app.scss`
 
-## Code of Conduct
+```scss
+@import "bootstrap/scss/bootstrap";
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Aquí se importa el código fuente Sass de Bootstrap, lo que permite personalizar variables antes de compilar.
 
-## Security Vulnerabilities
+### `resources/js/app.js`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```js
+import './bootstrap'; // Configura Axios y headers AJAX para Laravel
 
-## License
+import 'bootstrap'; 
+// Carga todo el JS de Bootstrap para usar data-bs-* desde el HTML (modals, dropdowns, etc.)
+// Si algún día necesitas controlar componentes desde JS:
+// import * as bootstrap from 'bootstrap';
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+import '../scss/app.scss'; // Compila Bootstrap (Sass) + tus estilos
+```
+
+---
+
+## ¿Por qué NO usamos los archivos compilados de Bootstrap?
+
+No se usa `bootstrap.min.css` ni `bootstrap.bundle.min.js` descargados manualmente porque eso impide:
+
+- Personalizar variables de Bootstrap
+- Integrarlo correctamente con Vite
+- Mantener una arquitectura moderna y escalable
+
+Bootstrap aquí se usa como framework fuente, no como archivo estático.
+
+---
+
+## Eliminación de Tailwind
+
+Se eliminaron estas dependencias:
+
+```bash
+npm uninstall @tailwindcss/vite tailwindcss
+```
+
+Y se limpió `vite.config.js` para que no procese Tailwind.
+
+---
+
+## Advertencias de Sass (silenciadas intencionalmente)
+
+Bootstrap 5.3 usa funciones Sass que fueron deprecadas por versiones modernas de Sass. Esto genera cientos de warnings al compilar.
+
+En lugar de bajar la versión de Sass, se silencian correctamente en `vite.config.js`:
+
+```js
+css: {
+    preprocessorOptions: {
+        scss: {
+            silenceDeprecations: [
+                'import',
+                'mixed-decls',
+                'color-functions',
+                'global-builtin',
+            ],
+        },
+    },
+},
+```
+
+---
+
+## Personalizar Bootstrap
+
+Puedes sobrescribir variables antes del import:
+
+```scss
+$primary: #123456;
+$border-radius: 12px;
+
+@import "bootstrap/scss/bootstrap";
+```
+
+---
+
+## Notas importantes
+
+- `resources/js/bootstrap.js` no es Bootstrap, es configuración de Axios para Laravel.
+- No existe Tailwind en este proyecto.
+- No existen archivos CSS estáticos en `public/`.
+- Todo pasa por Vite.
+
+---
+
+## Comandos útiles
+
+```bash
+npm run dev      # entorno local
+npm run build    # producción
+```
+
+---
+
+## Filosofía del proyecto
+
+Este proyecto usa Bootstrap de forma moderna y correcta dentro del ecosistema Laravel actual, evitando prácticas legacy como:
+
+- Incluir CSS/JS compilados manualmente
+- Sobrescribir Bootstrap con `!important`
+- Mezclar múltiples frameworks CSS
